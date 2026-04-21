@@ -1,262 +1,481 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taskflow — Smart Task Manager</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="styles.css">
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      fontFamily: { display: ['Space Grotesk'], body: ['DM Sans'] },
-      colors: {
-        bg: '#0A0A0A', surface: '#131313', card: '#1A1A1A',
-        border: '#272727', borderLight: '#333333',
-        accent: '#FF6B35', accentHover: '#FF8555', accentMuted: 'rgba(255,107,53,0.12)',
-        success: '#22C55E', successMuted: 'rgba(34,197,94,0.12)',
-        warning: '#EAB308', warningMuted: 'rgba(234,179,8,0.12)',
-        danger: '#EF4444', dangerMuted: 'rgba(239,68,68,0.12)',
-        info: '#38BDF8', infoMuted: 'rgba(56,189,248,0.12)',
-        txt: '#F0F0F0', txtSec: '#777777', txtMuted: '#555555'
-      }
-    }
-  }
-}
-</script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taskflow — Smart Task Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="icon" type="image/x-icon" href="/img/app.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { display: ["Space Grotesk"], body: ["DM Sans"] },
+            colors: {
+              bg: "#0A0A0A",
+              surface: "#131313",
+              card: "#1A1A1A",
+              border: "#272727",
+              borderLight: "#333333",
+              accent: "#FF6B35",
+              accentHover: "#FF8555",
+              accentMuted: "rgba(255,107,53,0.12)",
+              success: "#22C55E",
+              successMuted: "rgba(34,197,94,0.12)",
+              warning: "#EAB308",
+              warningMuted: "rgba(234,179,8,0.12)",
+              danger: "#EF4444",
+              dangerMuted: "rgba(239,68,68,0.12)",
+              info: "#38BDF8",
+              infoMuted: "rgba(56,189,248,0.12)",
+              txt: "#F0F0F0",
+              txtSec: "#777777",
+              txtMuted: "#555555",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body>
+    <div class="noise-overlay"></div>
+    <div id="toast-container" class="toast-container"></div>
 
-</head>
-<body>
-<div class="noise-overlay"></div>
-<div id="toast-container" class="toast-container"></div>
-
-<!-- ============ AUTH SCREEN ============ -->
-<div id="auth-screen" class="min-h-screen flex items-center justify-center relative">
-  <div class="auth-bg">
-    <div class="grid-pattern"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
-
-  <div class="auth-glass rounded-2xl p-8 w-full max-w-md relative z-10 mx-4">
-    <!-- Logo -->
-    <div class="flex items-center gap-3 mb-8">
-      <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
-        <i class="fa-solid fa-bolt text-white text-lg"></i>
+    <!-- ============ AUTH SCREEN ============ -->
+    <div
+      id="auth-screen"
+      class="min-h-screen flex items-center justify-center relative"
+    >
+      <div class="auth-bg">
+        <div class="grid-pattern"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
       </div>
-      <div>
-        <h1 class="font-display text-xl font-bold text-txt tracking-tight">Taskflow</h1>
-        <p class="text-[11px] text-txtMuted tracking-wider uppercase">Smart Task Manager</p>
-      </div>
-    </div>
 
-    <!-- Tab switch -->
-    <div class="flex bg-surface rounded-lg p-1 mb-6 border border-border">
-      <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-medium rounded-md transition-all bg-card text-txt">Sign In</button>
-      <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-medium rounded-md transition-all text-txtSec">Create Account</button>
-    </div>
-
-    <!-- Login Form -->
-    <form id="login-form" onsubmit="handleLogin(event)">
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-txtSec mb-1.5">Email</label>
-          <input type="email" id="login-email" class="input-field" placeholder="you@example.com" required>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-txtSec mb-1.5">Password</label>
-          <div class="relative">
-            <input type="password" id="login-password" class="input-field pr-10" placeholder="Enter your password" required>
-            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-txtMuted hover:text-txtSec transition-colors">
-              <i class="fa-regular fa-eye text-sm"></i>
-            </button>
+      <div
+        class="auth-glass rounded-2xl p-8 w-full max-w-md relative z-10 mx-4"
+      >
+        <!-- Logo -->
+        <div class="flex items-center gap-3 mb-8">
+          <div
+            class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center"
+          >
+            <i class="fa-solid fa-bolt text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="font-display text-xl font-bold text-txt tracking-tight">
+              Taskflow
+            </h1>
+            <p class="text-[11px] text-txtMuted tracking-wider uppercase">
+              Smart Task Manager
+            </p>
           </div>
         </div>
-        <div id="login-error" class="text-danger text-xs hidden"></div>
-        <button type="submit" class="btn-primary w-full">Sign In</button>
-      </div>
-    </form>
 
-    <!-- Register Form -->
-    <form id="register-form" onsubmit="handleRegister(event)" class="hidden">
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-txtSec mb-1.5">Full Name</label>
-          <input type="text" id="reg-name" class="input-field" placeholder="John Doe" required>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-txtSec mb-1.5">Email</label>
-          <input type="email" id="reg-email" class="input-field" placeholder="you@example.com" required>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-txtSec mb-1.5">Password</label>
-          <div class="relative">
-            <input type="password" id="reg-password" class="input-field pr-10" placeholder="Min 6 characters" required minlength="6">
-            <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-txtMuted hover:text-txtSec transition-colors">
-              <i class="fa-regular fa-eye text-sm"></i>
-            </button>
-          </div>
-        </div>
-        <div id="register-error" class="text-danger text-xs hidden"></div>
-        <button type="submit" class="btn-primary w-full">Create Account</button>
-      </div>
-    </form>
-
-    <p class="text-center text-xs text-txtMuted mt-6">
-      Demo: use any email/password to register, then sign in.
-    </p>
-  </div>
-</div>
-
-<!-- ============ MAIN APP ============ -->
-<div id="app-screen" class="hidden min-h-screen">
-  <!-- Top Navigation -->
-  <header class="sticky top-0 z-50 bg-bg/80 backdrop-blur-xl border-b border-border">
-    <div class="flex items-center justify-between px-5 py-3">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-          <i class="fa-solid fa-bolt text-white text-sm"></i>
-        </div>
-        <span class="font-display text-lg font-bold text-txt tracking-tight">Taskflow</span>
-        <div class="flex items-center gap-2 ml-4 px-2.5 py-1 rounded-full bg-surface border border-border">
-          <div class="live-dot"></div>
-          <span class="text-[11px] text-success font-medium">Live</span>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <!-- Search -->
-        <div class="relative hidden sm:block">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-txtMuted text-xs"></i>
-          <input type="text" id="search-input" class="input-field pl-9 py-2 text-xs w-56" placeholder="Search tasks..." oninput="filterTasks()">
-        </div>
-        <!-- New Task -->
-        <button onclick="openTaskModal()" class="btn-primary flex items-center gap-2 py-2 px-4 text-xs">
-          <i class="fa-solid fa-plus text-[10px]"></i> New Task
-        </button>
-        <!-- User -->
-        <div class="flex items-center gap-2.5 pl-3 border-l border-border">
-          <div id="user-avatar" class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-xs"></div>
-          <div class="hidden sm:block">
-            <p id="user-name" class="text-xs font-medium text-txt leading-tight"></p>
-            <p id="user-email" class="text-[10px] text-txtMuted leading-tight"></p>
-          </div>
-          <button onclick="handleLogout()" class="ml-2 text-txtMuted hover:text-danger transition-colors" title="Sign Out">
-            <i class="fa-solid fa-right-from-bracket text-sm"></i>
+        <!-- Tab switch -->
+        <div class="flex bg-surface rounded-lg p-1 mb-6 border border-border">
+          <button
+            id="tab-login"
+            onclick="switchAuthTab('login')"
+            class="flex-1 py-2 text-sm font-medium rounded-md transition-all bg-card text-txt"
+          >
+            Sign In
+          </button>
+          <button
+            id="tab-register"
+            onclick="switchAuthTab('register')"
+            class="flex-1 py-2 text-sm font-medium rounded-md transition-all text-txtSec"
+          >
+            Create Account
           </button>
         </div>
+
+        <!-- Login Form -->
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-txtSec mb-1.5"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="login-email"
+                class="input-field"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-txtSec mb-1.5"
+                >Password</label
+              >
+              <div class="relative">
+                <input
+                  type="password"
+                  id="login-password"
+                  class="input-field pr-10"
+                  placeholder="Enter your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onclick="togglePasswordVisibility('login-password', this)"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-txtMuted hover:text-txtSec transition-colors"
+                >
+                  <i class="fa-regular fa-eye text-sm"></i>
+                </button>
+              </div>
+            </div>
+            <div id="login-error" class="text-danger text-xs hidden"></div>
+            <button type="submit" class="btn-primary w-full">Sign In</button>
+          </div>
+        </form>
+
+        <!-- Register Form -->
+        <form
+          id="register-form"
+          onsubmit="handleRegister(event)"
+          class="hidden"
+        >
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-txtSec mb-1.5"
+                >Full Name</label
+              >
+              <input
+                type="text"
+                id="reg-name"
+                class="input-field"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-txtSec mb-1.5"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="reg-email"
+                class="input-field"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-txtSec mb-1.5"
+                >Password</label
+              >
+              <div class="relative">
+                <input
+                  type="password"
+                  id="reg-password"
+                  class="input-field pr-10"
+                  placeholder="Min 6 characters"
+                  required
+                  minlength="6"
+                />
+                <button
+                  type="button"
+                  onclick="togglePasswordVisibility('reg-password', this)"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-txtMuted hover:text-txtSec transition-colors"
+                >
+                  <i class="fa-regular fa-eye text-sm"></i>
+                </button>
+              </div>
+            </div>
+            <div id="register-error" class="text-danger text-xs hidden"></div>
+            <button type="submit" class="btn-primary w-full">
+              Create Account
+            </button>
+          </div>
+        </form>
+
+        <p class="text-center text-xs text-txtMuted mt-6">
+          Demo: use any email/password to register, then sign in.
+        </p>
       </div>
     </div>
-  </header>
 
-  <!-- Main Content -->
-  <div class="flex" style="height: calc(100vh - 57px);">
-    <!-- Activity Sidebar -->
-    <aside class="sidebar-panel w-64 flex-shrink-0 border-r border-border bg-surface/50 overflow-hidden flex flex-col">
-      <div class="p-4 border-b border-border">
-        <h2 class="font-display text-sm font-semibold text-txt flex items-center gap-2">
-          <i class="fa-solid fa-wave-square text-accent text-xs"></i> Activity Feed
-        </h2>
-        <p class="text-[10px] text-txtMuted mt-0.5">Real-time team updates</p>
-      </div>
-      <div id="activity-feed" class="flex-1 overflow-y-auto p-4 space-y-0"></div>
-    </aside>
+    <!-- ============ MAIN APP ============ -->
+    <div id="app-screen" class="hidden min-h-screen">
+      <!-- Top Navigation -->
+      <header
+        class="sticky top-0 z-50 bg-bg/80 backdrop-blur-xl border-b border-border"
+      >
+        <div class="flex items-center justify-between px-5 py-3">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"
+            >
+              <i class="fa-solid fa-bolt text-white text-sm"></i>
+            </div>
+            <span class="font-display text-lg font-bold text-txt tracking-tight"
+              >Taskflow</span
+            >
+            <div
+              class="flex items-center gap-2 ml-4 px-2.5 py-1 rounded-full bg-surface border border-border"
+            >
+              <div class="live-dot"></div>
+              <span class="text-[11px] text-success font-medium">Live</span>
+            </div>
+          </div>
 
-    <!-- Kanban Board -->
-    <main class="flex-1 overflow-x-auto overflow-y-hidden p-5">
-      <div class="flex items-center gap-4 mb-5">
-        <div class="flex gap-2" id="filter-buttons">
-          <button onclick="setFilter('all')" data-filter="all" class="btn-ghost py-1.5 px-3 text-xs active-filter">All</button>
-          <button onclick="setFilter('urgent')" data-filter="urgent" class="btn-ghost py-1.5 px-3 text-xs">Urgent</button>
-          <button onclick="setFilter('high')" data-filter="high" class="btn-ghost py-1.5 px-3 text-xs">High</button>
-          <button onclick="setFilter('medium')" data-filter="medium" class="btn-ghost py-1.5 px-3 text-xs">Medium</button>
-          <button onclick="setFilter('low')" data-filter="low" class="btn-ghost py-1.5 px-3 text-xs">Low</button>
+          <div class="flex items-center gap-3">
+            <!-- Search -->
+            <div class="relative hidden sm:block">
+              <i
+                class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-txtMuted text-xs"
+              ></i>
+              <input
+                type="text"
+                id="search-input"
+                class="input-field pl-9 py-2 text-xs w-56"
+                placeholder="Search tasks..."
+                oninput="filterTasks()"
+              />
+            </div>
+            <!-- New Task -->
+            <button
+              onclick="openTaskModal()"
+              class="btn-primary flex items-center gap-2 py-2 px-4 text-xs"
+            >
+              <i class="fa-solid fa-plus text-[10px]"></i> New Task
+            </button>
+            <!-- User -->
+            <div class="flex items-center gap-2.5 pl-3 border-l border-border">
+              <div
+                id="user-avatar"
+                class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-xs"
+              ></div>
+              <div class="hidden sm:block">
+                <p
+                  id="user-name"
+                  class="text-xs font-medium text-txt leading-tight"
+                ></p>
+                <p
+                  id="user-email"
+                  class="text-[10px] text-txtMuted leading-tight"
+                ></p>
+              </div>
+              <button
+                onclick="handleLogout()"
+                class="ml-2 text-txtMuted hover:text-danger transition-colors"
+                title="Sign Out"
+              >
+                <i class="fa-solid fa-right-from-bracket text-sm"></i>
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="ml-auto flex items-center gap-3">
-          <span id="task-stats" class="text-[11px] text-txtMuted"></span>
-        </div>
-      </div>
+      </header>
 
-      <div id="kanban-board" class="flex gap-4 pb-4" style="min-height: calc(100vh - 220px);">
-        <!-- Columns rendered by JS -->
-      </div>
-    </main>
-  </div>
-</div>
+      <!-- Main Content -->
+      <div class="flex" style="height: calc(100vh - 57px)">
+        <!-- Activity Sidebar -->
+        <aside
+          class="sidebar-panel w-64 flex-shrink-0 border-r border-border bg-surface/50 overflow-hidden flex flex-col"
+        >
+          <div class="p-4 border-b border-border">
+            <h2
+              class="font-display text-sm font-semibold text-txt flex items-center gap-2"
+            >
+              <i class="fa-solid fa-wave-square text-accent text-xs"></i>
+              Activity Feed
+            </h2>
+            <p class="text-[10px] text-txtMuted mt-0.5">
+              Real-time team updates
+            </p>
+          </div>
+          <div
+            id="activity-feed"
+            class="flex-1 overflow-y-auto p-4 space-y-0"
+          ></div>
+        </aside>
 
-<!-- ============ TASK MODAL ============ -->
-<div id="task-modal" class="modal-overlay" onclick="if(event.target===this)closeTaskModal()">
-  <div class="modal-content">
-    <div class="flex items-center justify-between mb-5">
-      <h2 id="modal-title" class="font-display text-lg font-bold text-txt">New Task</h2>
-      <button onclick="closeTaskModal()" class="text-txtMuted hover:text-txt transition-colors">
-        <i class="fa-solid fa-xmark text-lg"></i>
-      </button>
+        <!-- Kanban Board -->
+        <main class="flex-1 overflow-x-auto overflow-y-hidden p-5">
+          <div class="flex items-center gap-4 mb-5">
+            <div class="flex gap-2" id="filter-buttons">
+              <button
+                onclick="setFilter('all')"
+                data-filter="all"
+                class="btn-ghost py-1.5 px-3 text-xs active-filter"
+              >
+                All
+              </button>
+              <button
+                onclick="setFilter('urgent')"
+                data-filter="urgent"
+                class="btn-ghost py-1.5 px-3 text-xs"
+              >
+                Urgent
+              </button>
+              <button
+                onclick="setFilter('high')"
+                data-filter="high"
+                class="btn-ghost py-1.5 px-3 text-xs"
+              >
+                High
+              </button>
+              <button
+                onclick="setFilter('medium')"
+                data-filter="medium"
+                class="btn-ghost py-1.5 px-3 text-xs"
+              >
+                Medium
+              </button>
+              <button
+                onclick="setFilter('low')"
+                data-filter="low"
+                class="btn-ghost py-1.5 px-3 text-xs"
+              >
+                Low
+              </button>
+            </div>
+            <div class="ml-auto flex items-center gap-3">
+              <span id="task-stats" class="text-[11px] text-txtMuted"></span>
+            </div>
+          </div>
+
+          <div
+            id="kanban-board"
+            class="flex gap-4 pb-4"
+            style="min-height: calc(100vh - 220px)"
+          >
+            <!-- Columns rendered by JS -->
+          </div>
+        </main>
+      </div>
     </div>
-    <form id="task-form" onsubmit="handleTaskSubmit(event)">
-      <input type="hidden" id="task-id">
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-txtSec mb-1.5">Title</label>
-          <input type="text" id="task-title" class="input-field" placeholder="What needs to be done?" required>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-txtSec mb-1.5">Description</label>
-          <textarea id="task-desc" class="input-field resize-none" rows="3" placeholder="Add details..."></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-medium text-txtSec mb-1.5">Status</label>
-            <select id="task-status" class="input-field">
-              <option value="todo">To Do</option>
-              <option value="progress">In Progress</option>
-              <option value="review">Review</option>
-              <option value="done">Done</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-txtSec mb-1.5">Priority</label>
-            <select id="task-priority" class="input-field">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-medium text-txtSec mb-1.5">Due Date</label>
-            <input type="date" id="task-due" class="input-field">
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-txtSec mb-1.5">Tags (comma separated)</label>
-            <input type="text" id="task-tags" class="input-field" placeholder="design, frontend">
-          </div>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button type="submit" class="btn-primary flex-1">Save Task</button>
-          <button type="button" id="delete-task-btn" onclick="deleteCurrentTask()" class="btn-ghost text-danger border-danger/30 hover:bg-danger/10 hidden">
-            <i class="fa-regular fa-trash-can"></i> Delete
+
+    <!-- ============ TASK MODAL ============ -->
+    <div
+      id="task-modal"
+      class="modal-overlay"
+      onclick="if (event.target === this) closeTaskModal();"
+    >
+      <div class="modal-content">
+        <div class="flex items-center justify-between mb-5">
+          <h2 id="modal-title" class="font-display text-lg font-bold text-txt">
+            New Task
+          </h2>
+          <button
+            onclick="closeTaskModal()"
+            class="text-txtMuted hover:text-txt transition-colors"
+          >
+            <i class="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
+        <form id="task-form" onsubmit="handleTaskSubmit(event)">
+          <input type="hidden" id="task-id" />
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-txtSec mb-1.5"
+                >Title</label
+              >
+              <input
+                type="text"
+                id="task-title"
+                class="input-field"
+                placeholder="What needs to be done?"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-txtSec mb-1.5"
+                >Description</label
+              >
+              <textarea
+                id="task-desc"
+                class="input-field resize-none"
+                rows="3"
+                placeholder="Add details..."
+              ></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-txtSec mb-1.5"
+                  >Status</label
+                >
+                <select id="task-status" class="input-field">
+                  <option value="todo">To Do</option>
+                  <option value="progress">In Progress</option>
+                  <option value="review">Review</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-txtSec mb-1.5"
+                  >Priority</label
+                >
+                <select id="task-priority" class="input-field">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-txtSec mb-1.5"
+                  >Due Date</label
+                >
+                <input type="date" id="task-due" class="input-field" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-txtSec mb-1.5"
+                  >Tags (comma separated)</label
+                >
+                <input
+                  type="text"
+                  id="task-tags"
+                  class="input-field"
+                  placeholder="design, frontend"
+                />
+              </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+              <button type="submit" class="btn-primary flex-1">
+                Save Task
+              </button>
+              <button
+                type="button"
+                id="delete-task-btn"
+                onclick="deleteCurrentTask()"
+                class="btn-ghost text-danger border-danger/30 hover:bg-danger/10 hidden"
+              >
+                <i class="fa-regular fa-trash-can"></i> Delete
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-</div>
+    </div>
 
-<!-- ============ DETAIL MODAL ============ -->
-<div id="detail-modal" class="modal-overlay" onclick="if(event.target===this)closeDetailModal()">
-  <div class="modal-content" style="max-width: 560px;">
-    <div id="detail-content"></div>
-  </div>
-</div>
+    <!-- ============ DETAIL MODAL ============ -->
+    <div
+      id="detail-modal"
+      class="modal-overlay"
+      onclick="if (event.target === this) closeDetailModal();"
+    >
+      <div class="modal-content" style="max-width: 560px">
+        <div id="detail-content"></div>
+      </div>
+    </div>
 
-<script src="index.js"></script>
-</body>
+    <script src="index.js"></script>
+  </body>
 </html>
